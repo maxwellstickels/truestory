@@ -1,57 +1,109 @@
 import 'package:flutter/material.dart';
-
+import 'package:truestory_app/storage.dart';
+import 'package:truestory_app/profile_self.dart';
+import 'package:truestory_app/scroll.dart';
+import 'package:geolocator/geolocator.dart';
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TrueStory',
+      title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 58, 110, 183)),
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a blue toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 7, 69, 144)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'TrueStory Home Page'),
+      home: MyHomePage(title: 'TrueStory'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  MyHomePage({super.key, required this.title});
 
   final String title;
+  final DataStorage storage = DataStorage();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class _MyHomePageState extends State<MyHomePage> {
+  String _x = "__________";
+  String _output = "";
+  var myController = TextEditingController();
+  late Future<Position> _position;
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('Location permissions are permanently denied, app cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
+  
+  @override
+  void initState() {
+    super.initState();
+    _position = _determinePosition();
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    await widget.storage.writeX(myController.text);
+    setState(() {
+      _x = myController.text;
+      _output = "";
+    });
+    return;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +114,39 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Color.fromARGB(255, 188, 208, 255),
+        onDestinationSelected: (int index) {
+          if (index == 0) {
+            Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ScrollRoute()),
+            );
+          }
+          if (index == 2) {
+            Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfileRoute()),
+            );
+          }
+        },
+        indicatorColor: Color.fromARGB(0, 0, 0, 0),
+        selectedIndex: 1,
+        destinations: const <Widget>[
+          NavigationDestination(
+            icon: Icon(Icons.list),
+            label: 'Scroll',
+          ),
+          NavigationDestination(
+            icon: Badge(child: Icon(Icons.messenger_sharp)),
+            label: 'Create Post',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
@@ -90,21 +175,77 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              "Most recent message: $_x",
             ),
             Text(
-              '$_counter',
+              _output,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            const SizedBox(height:10),
+            /*
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    backgroundColor: const Color.fromARGB(255, 251, 167, 175),
+                  ),
+                  onPressed: _decrementCounter,
+                  child: const Icon(Icons.remove),
+                ),
+                const SizedBox(width:30),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    backgroundColor: const Color.fromARGB(255, 111, 166, 255),
+                  ),
+                  onPressed: _incrementCounter,
+                  child: const Icon(Icons.add),
+                ),
+              ],
+            ),
+            */
+            const SizedBox(height:30),
+            SizedBox(
+              width: 200,
+              child: TextField(
+                controller: myController,
+                decoration: const InputDecoration(
+                  hintText: 'Send text post',
+                ),
+              ),
+            ),
+            const SizedBox(height:10),
+            ElevatedButton(
+                  onPressed: () {
+                    // Validate will return true if the form is valid, or false if
+                    // the form is invalid.
+                    _submit();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    backgroundColor: Color.fromARGB(255, 128, 232, 246)               ),
+                  child: const Text('Update'),
+                ),
+                const SizedBox(height:30),
+                FutureBuilder(
+                future: _position,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(
+                        "Your coordinates are ${snapshot.data!.latitude}, ${snapshot.data!.longitude} :)");
+                  }
+                  if (snapshot.hasError) {
+                    return Text(snapshot.error.toString());
+                  }
+                  return const CircularProgressIndicator();
+                }),
+                
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

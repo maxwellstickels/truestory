@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB1LMURMbOETJr2VUAdq1OA5wiRPc9_pKw',
-    appId: '1:23491431483:android:c3c72c7b09d6e0086d601e',
+    appId: '1:23491431483:android:f9f779d43ec184a86d601e',
     messagingSenderId: '23491431483',
     projectId: 'cins467-truestory-29b3c',
     storageBucket: 'cins467-truestory-29b3c.appspot.com',
@@ -62,19 +62,19 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyApzmr3jrEvM08mwXBInHSSB7v9Tgt_gT0',
-    appId: '1:23491431483:ios:b7f2596130638a1f6d601e',
+    appId: '1:23491431483:ios:555166f08c1206e26d601e',
     messagingSenderId: '23491431483',
     projectId: 'cins467-truestory-29b3c',
     storageBucket: 'cins467-truestory-29b3c.appspot.com',
-    iosBundleId: 'com.example.truestoryApp',
+    iosBundleId: 'com.example.assignment1',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyApzmr3jrEvM08mwXBInHSSB7v9Tgt_gT0',
-    appId: '1:23491431483:ios:e70dbca08daf65866d601e',
+    appId: '1:23491431483:ios:0afa7551c745bd4c6d601e',
     messagingSenderId: '23491431483',
     projectId: 'cins467-truestory-29b3c',
     storageBucket: 'cins467-truestory-29b3c.appspot.com',
-    iosBundleId: 'com.example.truestoryApp.RunnerTests',
+    iosBundleId: 'com.example.assignment1.RunnerTests',
   );
 }
