@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:truestory_app/storage.dart';
 import 'package:truestory_app/profile_self.dart';
+import 'package:truestory_app/notifications.dart';
 import 'package:truestory_app/scroll.dart';
 import 'package:geolocator/geolocator.dart';
 void main() {
@@ -115,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       bottomNavigationBar: NavigationBar(
-        backgroundColor: Color.fromARGB(255, 188, 208, 255),
+        backgroundColor: const Color.fromARGB(255, 188, 208, 255),
         onDestinationSelected: (int index) {
           if (index == 0) {
             Navigator.push(
@@ -126,11 +127,17 @@ class _MyHomePageState extends State<MyHomePage> {
           if (index == 2) {
             Navigator.push(
                   context,
+                  MaterialPageRoute(builder: (context) => const NotifRoute()),
+            );
+          }
+          if (index == 3) {
+            Navigator.push(
+                  context,
                   MaterialPageRoute(builder: (context) => const ProfileRoute()),
             );
           }
         },
-        indicatorColor: Color.fromARGB(0, 0, 0, 0),
+        indicatorColor: const Color.fromARGB(0, 0, 0, 0),
         selectedIndex: 1,
         destinations: const <Widget>[
           NavigationDestination(
@@ -138,8 +145,12 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'Scroll',
           ),
           NavigationDestination(
-            icon: Badge(child: Icon(Icons.messenger_sharp)),
+            icon: Icon(Icons.messenger_sharp),
             label: 'Create Post',
+          ),
+          NavigationDestination(
+            icon: Badge(child: Icon(Icons.notifications_sharp)),
+            label: 'Notifications',
           ),
           NavigationDestination(
             icon: Icon(Icons.person),
@@ -226,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   style: TextButton.styleFrom(
                     foregroundColor: const Color.fromARGB(255, 255, 255, 255),
-                    backgroundColor: Color.fromARGB(255, 128, 232, 246)               ),
+                    backgroundColor: const Color.fromARGB(255, 128, 232, 246)               ),
                   child: const Text('Update'),
                 ),
                 const SizedBox(height:30),
